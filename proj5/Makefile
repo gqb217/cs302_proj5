@@ -1,4 +1,5 @@
 CXXFLAGS= -g -Wall
+PROGRAMS= worddice
 
 all: worddice
 
