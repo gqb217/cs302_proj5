@@ -44,7 +44,7 @@ void bfs(std::vector< std::vector<int> > edges, int word_size) {
 		loc = bfs_queue.front();
 		bfs_queue.pop();
 
-		for (int i = 0; i < edges[loc].size(); i++) {
+		for (int i = 0; i < (int)edges[loc].size(); i++) {
 			if (!visited[ edges[loc][i] ]) {
 
 				//-------
@@ -70,9 +70,9 @@ std::vector< std::vector<int> > get_edges(std::vector<std::string> dice, std::st
 	//For all dice,
 	// For all letters in word,
 	//  For all letters in dice,
-	for (int i = 0; i < dice.size(); i++) {
-		for (int j = 0; j < word.size(); j++) {
-			for (int k = 0; k < dice[i].size(); k++) {
+	for (int i = 0; i < (int)dice.size(); i++) {
+		for (int j = 0; j < (int)word.size(); j++) {
+			for (int k = 0; k < (int)dice[i].size(); k++) {
 				//If connection between current current dice and word letter found,
 				//	break to next letter.
 				if (dice[i][k] == word[j]) {
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 	dice = get_lines(argv[1]);
 	words = get_lines(argv[2]);
 
-	for (int k = 0; k < words.size(); k++) {
+	for (int k = 0; k < (int)words.size(); k++) {
 
 		//Populate edge vector
 		dice_edges = get_edges(dice, words[k]);
