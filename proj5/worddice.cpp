@@ -7,6 +7,8 @@
 #include <string>		//std::string
 #include <vector>		//std::vector
 
+using namespace std;
+
 //bfs
 //Provides BFS search for max flow.
 void bfs(std::vector< std::vector<int> > edges, int word_size) {
@@ -116,7 +118,7 @@ int main(int argc, char* argv[]) {
 
 	//Make sure program was called correctly!
 	if (argc != 3) {
-		std::cout << "Usage: " << argv[0] << " [Dice file] [Word file]";
+		std::cout << "Usage: " << argv[0] << " [Dice file] [Word file]\n";
 		return 1;
 	}
 
