@@ -11,7 +11,7 @@ using namespace std;
 
 //bfs
 //Provides BFS search for max flow.
-std::vector<int> bfs(std::vector< std::vector<int> > edges) {
+std::vector<int> bfs(std::vector< std::vector<int> > edges, std::vector< std::vector<int> > flow, int &cost) {
 	//Begin BFS
 	std::vector<int> bfs_queue;
 	std::vector<bool> visitied(edges.size(), false);
@@ -44,30 +44,20 @@ std::vector<int> bfs(std::vector< std::vector<int> > edges) {
 		}
 
 		//For all nodes adjacent to loc,
-		for (int i = 0; i < edges[loc].size(); i++) {
+//		for (int i = 0; i < edges[loc].size(); i++) {
+		for (int i = 0; i < flow[loc].size(); i++) {
 			//Check if the distance is overall shorter by taking the current node
 			//	to that node.
-			if ((distances[loc] + 1) < distances[edges[loc][i]]) {
+//			if ((distances[loc] + 1) < distances[edges[loc][i]]) {
+			if (flow[loc][i] == 0) {
 				distances[edges[loc][i]] = distances[loc] + 1;
 				past[edges[loc][i]] = loc;
+				cost = 1;
 			}
 		}//for (i < edges[loc].size())
 	}//while (!bfs_queue.empty())
 
-	loc = 9;
-	while(loc != -1) {
-		path.insert(path.begin(), loc);
-		loc = past[loc];
-	}
-
-	path.erase(path.begin());
-	path.erase(path.begin() + (path.size()-1));
-/*
-	for (int i = 0; i < path.size(); i++)
-		std::cout << path[i] << ' ';
-	std::cout << std::endl;
-*/
-	return path;
+	return past;
 }
 
 //get_edges
@@ -104,7 +94,7 @@ std::vector< std::vector<int> > get_edges(std::vector<std::string> dice, std::st
 	}
 
 	return dice_edges;
-}//bfs
+}//get_edges
 
 //get_lines
 //gets all lines of a given file(name) in the form of a vector
@@ -125,12 +115,12 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> dice,
 								  words;
 	std::vector< std::vector<int> > edges,
-											  word_edges;
+											  word_edges,
+											  flow;
 
 	std::vector<int> path;
 
-	bool can_spell;
-	int total_edges;
+	int cost = 0;;
 
 	//Make sure program was called correctly!
 	if (argc != 3) {
@@ -142,7 +132,9 @@ int main(int argc, char* argv[]) {
 	dice = get_lines(argv[1]);
 	words = get_lines(argv[2]);
 
-	for (int k = 0; k < (int)words.size(); k++) {
+	for (int k = 0; k < 1; /*(int)words.size();*/ k++) {
+
+		int f = 0;
 
 		//Populate edge vector
 		edges = get_edges(dice, words[k]);
@@ -173,13 +165,36 @@ int main(int argc, char* argv[]) {
 		//End setup of edges vector
 		//=================================================================
 
-		std::cout << words[k] << std::endl;
 		for (int i = 0; i < edges.size(); i++) {
-			for (int j = 0; j < edges[i].size(); j++)
-				std::cout << edges[i][j] << ' ';
-			std::cout << std::endl;
+			flow.push_back(std::vector<int>());
+			for (int j = 0; j < edges[i].size(); j++) {
+				flow[i].push_back(0);
+			}
 		}
 
+		while (true) {
+			std::vector<int> p = bfs(edges, flow, cost);
+
+			if ()
+
+			f += cost;
+
+			std::cout << cost << std::endl;
+
+			std::cout << words[k] << std::endl;
+			for (int i = 0; i < p.size(); i++) {
+				std::cout << p[i] << ' ';
+			}
+			std::cout << std::endl;
+			std::cout << words[k] << std::endl;
+			for (int i = 0; i < edges.size(); i++) {
+				for (int j = 0; j < edges[i].size(); j++)
+					std::cout << edges[i][j] << ' ';
+				std::cout << std::endl;
+			}
+		}
+
+		flow.clear();
 	}//for (k < words.size())
 
 	return 0;
