@@ -62,11 +62,11 @@ std::vector<int> bfs(std::vector< std::vector<int> > edges) {
 
 	path.erase(path.begin());
 	path.erase(path.begin() + (path.size()-1));
-
+/*
 	for (int i = 0; i < path.size(); i++)
 		std::cout << path[i] << ' ';
 	std::cout << std::endl;
-
+*/
 	return path;
 }
 
@@ -124,7 +124,13 @@ std::vector<std::string> get_lines(char* filename) {
 int main(int argc, char* argv[]) {
 	std::vector<std::string> dice,
 								  words;
-	std::vector< std::vector<int> > edges;
+	std::vector< std::vector<int> > edges,
+											  word_edges;
+
+	std::vector<int> path;
+
+	bool can_spell;
+	int total_edges;
 
 	//Make sure program was called correctly!
 	if (argc != 3) {
@@ -136,10 +142,11 @@ int main(int argc, char* argv[]) {
 	dice = get_lines(argv[1]);
 	words = get_lines(argv[2]);
 
-	for (int k = 0; k < 2; /*(int)words.size();*/ k++) {
+	for (int k = 0; k < (int)words.size(); k++) {
 
 		//Populate edge vector
 		edges = get_edges(dice, words[k]);
+
 
 		//=================================================================
 		//Begin setup of edges vector
@@ -166,10 +173,14 @@ int main(int argc, char* argv[]) {
 		//End setup of edges vector
 		//=================================================================
 
-		//Call bfs on gathered edges.
-		bfs(edges);
+		std::cout << words[k] << std::endl;
+		for (int i = 0; i < edges.size(); i++) {
+			for (int j = 0; j < edges[i].size(); j++)
+				std::cout << edges[i][j] << ' ';
+			std::cout << std::endl;
+		}
 
-	}
+	}//for (k < words.size())
 
 	return 0;
 }//main
