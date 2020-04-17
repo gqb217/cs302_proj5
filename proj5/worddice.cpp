@@ -11,33 +11,31 @@
 
 //bfs
 //Provides BFS search for max flow.
-std::vector<int> bfs(std::vector< std::vector<int> > edges, Matrix<int> flow, int &cost) {
+std::vector<int> bfs(std::vector< std::vector<int> > edges) {
 	//Begin BFS
 	std::vector<int> bfs_queue;
-	std::vector<bool> visitied(edges.size(), false);
-
 	std::vector<int> distances(edges.size(), 5);
 	std::vector<int> past(edges.size(), -1);
 
-	std::vector<int> path;
-
 	int loc;
-
-	cost = 0;
 
 	for (int i = 0; i < edges.size(); i++)
 		bfs_queue.push_back(i);
 
+	//Set distance to source as 0
 	distances[0] = 0;
 
+	//While there's still more nodes in the queue,
 	while (!bfs_queue.empty()) {
 		loc = bfs_queue[0];
 
+		//Find the minimum distance node in the queue
 		for (int i = 1; i < bfs_queue.size(); i++) {
 			if (distances[i] < distances[loc])
 				loc = bfs_queue[i];
 		}
 
+		//Delete the minimum distance node in the queue
 		for(std::vector<int>::iterator it = bfs_queue.begin(); it != bfs_queue.end(); it++) {
 			if(*it == loc) {
 				bfs_queue.erase(it);
@@ -46,19 +44,17 @@ std::vector<int> bfs(std::vector< std::vector<int> > edges, Matrix<int> flow, in
 		}
 
 		//For all nodes adjacent to loc,
-//		for (int i = 0; i < edges[loc].size(); i++) {
-		for (int i = 0; i < flow.N_cols; i++) {
+		for (int i = 0; i < edges[loc].size(); i++) {
 			//Check if the distance is overall shorter by taking the current node
 			//	to that node.
-//			if ((distances[loc] + 1) < distances[edges[loc][i]]) {
-			if (flow[loc][i] == 0) {
+			if ((distances[loc] + 1) < distances[edges[loc][i]]) {
 				distances[edges[loc][i]] = distances[loc] + 1;
 				past[edges[loc][i]] = loc;
-				cost = 1;
 			}
 		}//for (i < edges[loc].size())
 	}//while (!bfs_queue.empty())
 
+	//Return parentage vector.
 	return past;
 }
 
@@ -95,6 +91,46 @@ std::vector< std::vector<int> > get_edges(std::vector<std::string> dice, std::st
 		dice_edges_buff.clear();
 	}
 
+	//Creating the graph
+	//=================================================================
+	//Begin setup of edges vector
+	std::vector<int> source_buff;
+
+	//Number of dice in use
+	int dice_size = dice_edges.size();
+
+	//Set up source node to connect to all dice nodes
+	for (int i = 0; i < dice_size; i++)
+		source_buff.push_back(i+1);
+	
+	//Add source node
+	dice_edges.insert(dice_edges.begin(), source_buff);
+
+	//Add word nodes that will point to sink
+	//NOTE: sink is 1 + dice_size + word_size
+	for (int i = 0; i < word.size(); i++)
+		dice_edges.push_back(std::vector<int>(1, 1 + dice_size + word.size()));
+	
+	//Add sink node for posterity.
+	dice_edges.push_back(std::vector<int>());
+
+	//End setup of edges vector
+	//=================================================================
+
+	for (int i = 0; i < dice_edges.size(); i++) {
+		std::cout << "Node " << i << ": ";
+		if (i == 0)
+			std::cout << "SOURCE";
+		else if (i == (dice_edges.size() - 1))
+			std::cout << "SINK";
+		else
+			std::cout << word;
+		std::cout << " Edges to ";
+		for (int j = 0; j < dice_edges[i].size(); j++)
+			std::cout << dice_edges[i][j] << ' ';
+		std::cout << std::endl;
+	}
+
 	return dice_edges;
 }//get_edges
 
@@ -115,14 +151,8 @@ std::vector<std::string> get_lines(char* filename) {
 
 int main(int argc, char* argv[]) {
 	std::vector<std::string> dice,
-								  words;
-	std::vector< std::vector<int> > edges,
-											  word_edges;
-	Matrix<int> flow;
-
-	std::vector<int> path;
-
-	int cost = 0;
+									 words;
+	std::vector< std::vector<int> > edges;
 
 	//Make sure program was called correctly!
 	if (argc != 3) {
@@ -134,76 +164,10 @@ int main(int argc, char* argv[]) {
 	dice = get_lines(argv[1]);
 	words = get_lines(argv[2]);
 
-	for (int k = 0; k < 1; /*(int)words.size();*/ k++) {
-
-		int f = 0;
+	for (int k = 0; k < (int)words.size(); k++) {
 
 		//Populate edge vector
 		edges = get_edges(dice, words[k]);
-
-		//Creating the graph
-		//=================================================================
-		//Begin setup of edges vector
-		std::vector<int> source_buff;
-
-		//Number of dice in use
-		int dice_size = edges.size();
-
-		//Set up source node to connect to all dice nodes
-		for (int i = 0; i < dice_size; i++)
-			source_buff.push_back(i+1);
-		
-		//Add source node
-		edges.insert(edges.begin(), source_buff);
-
-		//Add word nodes that will point to sink
-		//NOTE: sink is 1 + dice_size + word_size
-		for (int i = 0; i < words[k].size(); i++)
-			edges.push_back(std::vector<int>(1, 1 + dice_size + words[k].size()));
-		
-		//Add sink node for posterity.
-		edges.push_back(std::vector<int>());
-
-		//End setup of edges vector
-		//=================================================================
-
-		flow.resize(edges.size(), edges.size());
-
-		for (int i = 0; i < flow.N_rows; i++)
-			for (int j = 0; j < flow.N_cols; j++)
-				flow[i][j] = 0;
-
-		while (true) {
-			std::vector<int> p = bfs(edges, flow, cost);
-
-			if (cost == 0)
-				break;
-
-			f += cost;
-
-			int loc = edges.size()-1,
-				loc_parent;
-
-			while (loc != 0) {
-				loc_parent = p[loc];
-				flow[loc_parent][loc] = flow[loc_parent][loc] - cost;
-				flow[loc][loc_parent] = flow[loc][loc_parent] + cost;
-			}
-
-			std::cout << cost << std::endl;
-
-			std::cout << words[k] << std::endl;
-			for (int i = 0; i < p.size(); i++) {
-				std::cout << p[i] << ' ';
-			}
-			std::cout << std::endl;
-			std::cout << words[k] << std::endl;
-			for (int i = 0; i < edges.size(); i++) {
-				for (int j = 0; j < edges[i].size(); j++)
-					std::cout << edges[i][j] << ' ';
-				std::cout << std::endl;
-			}
-		}
 
 	}//for (k < words.size())
 
