@@ -7,11 +7,11 @@
 #include <string>		//std::string
 #include <vector>		//std::vector
 
-using namespace std;
+#include "matrix.h"
 
 //bfs
 //Provides BFS search for max flow.
-std::vector<int> bfs(std::vector< std::vector<int> > edges, std::vector< std::vector<int> > flow, int &cost) {
+std::vector<int> bfs(std::vector< std::vector<int> > edges, Matrix<int> flow, int &cost) {
 	//Begin BFS
 	std::vector<int> bfs_queue;
 	std::vector<bool> visitied(edges.size(), false);
@@ -22,6 +22,8 @@ std::vector<int> bfs(std::vector< std::vector<int> > edges, std::vector< std::ve
 	std::vector<int> path;
 
 	int loc;
+
+	cost = 0;
 
 	for (int i = 0; i < edges.size(); i++)
 		bfs_queue.push_back(i);
@@ -45,7 +47,7 @@ std::vector<int> bfs(std::vector< std::vector<int> > edges, std::vector< std::ve
 
 		//For all nodes adjacent to loc,
 //		for (int i = 0; i < edges[loc].size(); i++) {
-		for (int i = 0; i < flow[loc].size(); i++) {
+		for (int i = 0; i < flow.N_cols; i++) {
 			//Check if the distance is overall shorter by taking the current node
 			//	to that node.
 //			if ((distances[loc] + 1) < distances[edges[loc][i]]) {
@@ -115,12 +117,12 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> dice,
 								  words;
 	std::vector< std::vector<int> > edges,
-											  word_edges,
-											  flow;
+											  word_edges;
+	Matrix<int> flow;
 
 	std::vector<int> path;
 
-	int cost = 0;;
+	int cost = 0;
 
 	//Make sure program was called correctly!
 	if (argc != 3) {
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]) {
 		//Populate edge vector
 		edges = get_edges(dice, words[k]);
 
-
+		//Creating the graph
 		//=================================================================
 		//Begin setup of edges vector
 		std::vector<int> source_buff;
@@ -165,19 +167,28 @@ int main(int argc, char* argv[]) {
 		//End setup of edges vector
 		//=================================================================
 
-		for (int i = 0; i < edges.size(); i++) {
-			flow.push_back(std::vector<int>());
-			for (int j = 0; j < edges[i].size(); j++) {
-				flow[i].push_back(0);
-			}
-		}
+		flow.resize(edges.size(), edges.size());
+
+		for (int i = 0; i < flow.N_rows; i++)
+			for (int j = 0; j < flow.N_cols; j++)
+				flow[i][j] = 0;
 
 		while (true) {
 			std::vector<int> p = bfs(edges, flow, cost);
 
-			if ()
+			if (cost == 0)
+				break;
 
 			f += cost;
+
+			int loc = edges.size()-1,
+				loc_parent;
+
+			while (loc != 0) {
+				loc_parent = p[loc];
+				flow[loc_parent][loc] = flow[loc_parent][loc] - cost;
+				flow[loc][loc_parent] = flow[loc][loc_parent] + cost;
+			}
 
 			std::cout << cost << std::endl;
 
@@ -194,7 +205,6 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		flow.clear();
 	}//for (k < words.size())
 
 	return 0;
